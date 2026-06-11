@@ -1107,6 +1107,91 @@ function PersonalIllustPanel({ selectedId, onSelect }) {
 }
 
 
+// ── Image Upload Panel ────────────────────────────────────────────────────
+function ImageUploadPanel({ onApply, currentUrl, imageSize, dark = false }) {
+  const [preview, setPreview] = useState(currentUrl || null);
+  const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef(null);
+
+  const bg      = dark ? "#12132A"              : "#FAF7FF";
+  const border  = dark ? "1px solid #2A2C52"    : "1px solid #E8E0F0";
+  const textPri = dark ? "white"                : tokens.color.primary;
+  const textSec = dark ? "rgba(255,255,255,0.5)": tokens.color.quaternary;
+  const dropBdr = dragOver
+    ? `2px dashed ${tokens.color.brand}`
+    : dark ? "2px dashed #3A3C5A" : "2px dashed #D4C0F0";
+
+  const process = (file) => {
+    setError("");
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setError("이미지 파일만 업로드 가능합니다"); return; }
+    if (file.size > 10 * 1024 * 1024) { setError("파일 크기는 10MB 이하여야 합니다"); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => setPreview(e.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div style={{ background: bg, border, borderRadius: 12, padding: 14, marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 14 }}>📁</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: textPri, fontFamily: tokens.font.family }}>이미지 직접 업로드</span>
+        </div>
+        {imageSize && (
+          <span style={{ fontSize: 10, color: textSec, fontFamily: tokens.font.family }}>
+            권장 {imageSize.w}×{imageSize.h}px
+          </span>
+        )}
+      </div>
+
+      {/* 드롭존 */}
+      <div
+        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={e => { e.preventDefault(); setDragOver(false); process(e.dataTransfer.files[0]); }}
+        onClick={() => inputRef.current?.click()}
+        style={{ border: dropBdr, borderRadius: 8, background: dark ? "#0D0E24" : "white", padding: "14px 10px", textAlign: "center", cursor: "pointer", transition: "border 0.15s" }}
+      >
+        <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }}
+          onChange={e => { process(e.target.files[0]); e.target.value = ""; }} />
+        {preview ? (
+          <>
+            <img src={preview} alt="" style={{ maxWidth: "100%", maxHeight: 100, objectFit: "contain", borderRadius: 6, display: "block", margin: "0 auto 6px" }} />
+            <div style={{ fontSize: 10, color: textSec, fontFamily: tokens.font.family }}>클릭해서 교체</div>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 24, marginBottom: 6 }}>🖼</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: textSec, fontFamily: tokens.font.family, marginBottom: 3 }}>
+              {dragOver ? "여기에 놓으세요" : "클릭 또는 드래그"}
+            </div>
+            <div style={{ fontSize: 10, color: textSec, fontFamily: tokens.font.family, opacity: 0.7 }}>JPG · PNG · WebP · 최대 10MB</div>
+          </>
+        )}
+      </div>
+
+      {error && <div style={{ fontSize: 10, color: "#C62828", marginTop: 6, fontFamily: tokens.font.family }}>⚠ {error}</div>}
+
+      {/* 버튼 */}
+      <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+        <button onClick={() => preview && onApply(preview)} disabled={!preview}
+          style={{ flex: 1, padding: "7px 0", borderRadius: 7, border: `1.5px solid ${tokens.color.brand}`, background: "transparent", color: preview ? tokens.color.brand : "#BDBDBD", fontSize: 11, fontWeight: 700, cursor: preview ? "pointer" : "not-allowed", fontFamily: tokens.font.family }}>
+          배너에 적용
+        </button>
+        {preview && (
+          <button onClick={() => { setPreview(null); onApply(null); }}
+            style={{ padding: "7px 12px", borderRadius: 7, border: "1.5px solid #FFCDD2", background: "#FFF5F5", color: "#C62828", fontSize: 11, cursor: "pointer", fontFamily: tokens.font.family }}>
+            제거
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 // ── Toss-style Illustration Style Preset ────────────────────────────────
 // 토스 일러스트 스타일: 면 중심 플랫 벡터 + 소프트 멀티레이어 그림자 + 핑크 포인트
 // 동일 톤&매너로 주제만 바꾸어 일관된 시리즈 생성
@@ -2012,6 +2097,14 @@ export default function App() {
                           ? { ...b, slotValues: { ...b.slotValues, aiImageUrl: url } } : b))}
                         currentImageUrl={selectedBanner.slotValues?.aiImageUrl}
                       />
+                      {/* 이미지 직접 업로드 */}
+                      <ImageUploadPanel
+                        imageSize={{ w: 72, h: 48 }}
+                        currentUrl={selectedBanner.slotValues?.aiImageUrl}
+                        dark={true}
+                        onApply={(url) => setBanners(p => p.map(b => b.id === selectedBannerId
+                          ? { ...b, slotValues: { ...b.slotValues, aiImageUrl: url } } : b))}
+                      />
                       {/* 텍스트 문구 편집 */}
                       <div style={{ background:"#12132A", border:"1px solid #2A2C52", borderRadius:12, padding:16 }}>
                         <div style={{ fontSize:12, fontWeight:700, color:"rgba(255,255,255,0.7)", marginBottom:10, fontFamily:tokens.font.family }}>텍스트 문구 편집</div>
@@ -2044,6 +2137,31 @@ export default function App() {
                     </div>
                   ) : (
                     <>
+                      {TEMPLATES[selectedBanner.templateId]?.hasImage && (
+                        <>
+                          <ImageUploadPanel
+                            imageSize={(() => {
+                              const id = selectedBanner.templateId;
+                              if (id === "card-large")  return { w: 72,  h: 104 };
+                              if (id === "card-medium") return { w: 56,  h: 56  };
+                              if (id === "main-left")   return { w: 280, h: 239 };
+                              if (id === "main-center") return { w: 280, h: 200 };
+                              if (id === "main-gift")   return { w: 280, h: 200 };
+                              if (id === "bottom-sheet") return { w: 124, h: 130 };
+                              return null;
+                            })()}
+                            currentUrl={selectedBanner.slotValues?.illustUrl}
+                            onApply={(url) => setBanners(p => p.map(b =>
+                              b.id === selectedBannerId ? { ...b, slotValues: { ...b.slotValues, illustUrl: url } } : b
+                            ))}
+                          />
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 14 }}>
+                            <div style={{ flex: 1, height: 1, background: "#E0E0E0" }} />
+                            <span style={{ fontSize: 10, color: tokens.color.quaternary, fontFamily: tokens.font.family }}>또는 AI로 생성</span>
+                            <div style={{ flex: 1, height: 1, background: "#E0E0E0" }} />
+                          </div>
+                        </>
+                      )}
                       <AIPanel template={selectedBanner.templateId} onApply={applyAI} />
                       <EditorPanel template={selectedBanner.templateId} slotValues={selectedBanner.slotValues} onChange={updateSlot} onBgChange={updateBg} bgColor={selectedBanner.bgColor} />
                     </>
