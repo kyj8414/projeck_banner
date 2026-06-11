@@ -1722,15 +1722,15 @@ function BannerCard({ banner, onSelect, onDelete, onStatusChange, isSelected }) 
       onClick={() => onSelect(banner.id)}
       style={{
         background: "white",
-        border: `1.5px solid ${isSelected ? tokens.color.brand : "rgba(0,0,0,0.08)"}`,
-        borderRadius: 12,
-        padding: "14px 16px",
+        border: `1.5px solid ${isSelected ? "#3182F6" : "#E5E8EC"}`,
+        borderRadius: 10,
+        padding: "12px 14px",
         cursor: "pointer",
         display: "flex",
         alignItems: "center",
         gap: 14,
         transition: "box-shadow 0.15s",
-        boxShadow: isSelected ? `0 0 0 3px ${tokens.color.brandLight}` : "none",
+        boxShadow: isSelected ? "0 0 0 3px #EEF5FF" : "none",
       }}
     >
       {/* Mini preview */}
@@ -1740,19 +1740,19 @@ function BannerCard({ banner, onSelect, onDelete, onStatusChange, isSelected }) 
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: tokens.color.primary, fontFamily: tokens.font.family, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A", fontFamily: tokens.font.family, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {banner.name}
           </div>
           <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: st.bg, color: st.text, fontWeight: 600, fontFamily: tokens.font.family, flexShrink: 0 }}>{st.label}</span>
         </div>
-        <div style={{ fontSize: 11, color: tokens.color.quaternary, fontFamily: tokens.font.family }}>{tmpl?.label} · {formatDate(banner.createdAt)}</div>
+        <div style={{ fontSize: 11, color: "#9EA6B2", fontFamily: tokens.font.family }}>{tmpl?.label} · {formatDate(banner.createdAt)}</div>
       </div>
 
       <div style={{ display: "flex", gap: 4, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
         <select
           value={banner.status}
           onChange={e => onStatusChange(banner.id, e.target.value)}
-          style={{ fontSize: 11, padding: "3px 6px", borderRadius: 6, border: "1px solid #E0E0E0", fontFamily: tokens.font.family, cursor: "pointer", background: "white" }}
+          style={{ fontSize: 11, padding: "3px 6px", borderRadius: 6, border: "1px solid #E5E8EC", fontFamily: tokens.font.family, cursor: "pointer", background: "white", color: "#474747" }}
         >
           {Object.entries(STATUS_COLORS).map(([k, v]) => (
             <option key={k} value={k}>{v.label}</option>
@@ -1904,46 +1904,46 @@ export default function App() {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", fontFamily: tokens.font.family, background: tokens.color.bgPage, overflow: "hidden" }}>
+    <div style={{ display: "flex", height: "100vh", fontFamily: tokens.font.family, background: "#F5F6F8", overflow: "hidden" }}>
 
       {/* ── Sidebar ── */}
-      <div style={{ width: 224, background: "#1C1C1E", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+      <div style={{ width: 220, background: "white", display: "flex", flexDirection: "column", flexShrink: 0, borderRight: "1px solid #E5E8EC" }}>
         {/* Logo */}
-        <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        <div style={{ padding: "18px 16px 14px", borderBottom: "1px solid #F0F2F5" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: tokens.color.brand, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "white" }}>U+</div>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: tokens.color.brand, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "white", letterSpacing: -0.5 }}>U+</div>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>배너 관리</div>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>Admin System</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A" }}>배너 관리</div>
+              <div style={{ fontSize: 10, color: "#9EA6B2" }}>Admin System</div>
             </div>
           </div>
         </div>
 
         {/* Nav */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "12px 0" }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.3)", padding: "0 18px 8px", letterSpacing: 0.8, textTransform: "uppercase" }}>배너 유형</div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "10px 0" }}>
+          <div style={{ fontSize: 10, fontWeight: 600, color: "#9EA6B2", padding: "0 16px 8px", letterSpacing: 0.6, textTransform: "uppercase" }}>배너 유형</div>
           {MENU.map(item => (
             <div key={item.id}>
               {item.isGroup ? (
                 <>
                   <div
                     onClick={() => setOpenGroups(p => ({ ...p, [item.id]: !p[item.id] }))}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 18px", cursor: "pointer", color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600 }}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px", cursor: "pointer", color: "#474747", fontSize: 13, fontWeight: 600 }}
                   >
-                    <span style={{ display: "flex", alignItems: "center", gap: 7 }}><span style={{ fontSize: 13 }}>{item.icon}</span>{item.label}</span>
-                    <span style={{ fontSize: 10, transition: "transform 0.15s", display: "inline-block", transform: openGroups[item.id] ? "rotate(90deg)" : "rotate(0deg)" }}>›</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 7 }}><span style={{ fontSize: 14 }}>{item.icon}</span>{item.label}</span>
+                    <span style={{ fontSize: 11, color: "#9EA6B2", transition: "transform 0.15s", display: "inline-block", transform: openGroups[item.id] ? "rotate(90deg)" : "rotate(0deg)" }}>›</span>
                   </div>
                   {openGroups[item.id] && item.children.map(child => (
                     <div
                       key={child.id}
                       onClick={() => { setSelectedTemplateId(child.id); setSelectedBannerId(null); setView("list"); }}
                       style={{
-                        padding: "7px 18px 7px 38px",
+                        padding: "7px 16px 7px 36px",
                         cursor: "pointer",
-                        fontSize: 12,
-                        color: selectedTemplateId === child.id ? "white" : "rgba(255,255,255,0.5)",
-                        background: selectedTemplateId === child.id ? "rgba(225,9,117,0.2)" : "transparent",
-                        borderLeft: selectedTemplateId === child.id ? `2px solid ${tokens.color.brand}` : "2px solid transparent",
+                        fontSize: 13,
+                        color: selectedTemplateId === child.id ? "#3182F6" : "#6B7684",
+                        background: selectedTemplateId === child.id ? "#EEF5FF" : "transparent",
+                        borderLeft: selectedTemplateId === child.id ? "2.5px solid #3182F6" : "2.5px solid transparent",
                         fontWeight: selectedTemplateId === child.id ? 600 : 400,
                       }}
                     >{child.label}</div>
@@ -1953,30 +1953,30 @@ export default function App() {
                 <div
                   onClick={() => { setSelectedTemplateId(item.id); setSelectedBannerId(null); setView("list"); }}
                   style={{
-                    display: "flex", alignItems: "center", gap: 8, padding: "8px 18px", cursor: "pointer", fontSize: 12,
-                    color: selectedTemplateId === item.id ? "white" : "rgba(255,255,255,0.55)",
-                    background: selectedTemplateId === item.id ? "rgba(225,9,117,0.2)" : "transparent",
-                    borderLeft: selectedTemplateId === item.id ? `2px solid ${tokens.color.brand}` : "2px solid transparent",
+                    display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13,
+                    color: selectedTemplateId === item.id ? "#3182F6" : "#6B7684",
+                    background: selectedTemplateId === item.id ? "#EEF5FF" : "transparent",
+                    borderLeft: selectedTemplateId === item.id ? "2.5px solid #3182F6" : "2.5px solid transparent",
                     fontWeight: selectedTemplateId === item.id ? 600 : 400,
                   }}
                 >
-                  <span style={{ fontSize: 13 }}>{item.icon}</span>{item.label}
+                  <span style={{ fontSize: 14 }}>{item.icon}</span>{item.label}
                 </div>
               )}
             </div>
           ))}
         </div>
 
-        {/* Bottom stats — 현재 선택 유형 기준 */}
-        <div style={{ padding: "14px 18px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.25)", fontFamily: tokens.font.family, marginBottom: 8, textAlign: "center", letterSpacing: 0.5 }}>
+        {/* Bottom stats */}
+        <div style={{ padding: "14px 16px", borderTop: "1px solid #F0F2F5" }}>
+          <div style={{ fontSize: 10, color: "#9EA6B2", marginBottom: 8, textAlign: "center", letterSpacing: 0.4 }}>
             {TEMPLATES[selectedTemplateId]?.category?.toUpperCase()} 유형 현황
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            {[["전체", stats.total, "#888"], ["게시됨", stats.published, "#4CAF50"], ["초안", stats.draft, "#FFC107"], ["검토중", stats.review, "#2196F3"]].map(([k, v, c]) => (
-              <div key={k} style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: c }}>{v}</div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>{k}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+            {[["전체", stats.total, "#6B7684"], ["게시됨", stats.published, "#00B493"], ["초안", stats.draft, "#F59E0B"], ["검토중", stats.review, "#3182F6"]].map(([k, v, c]) => (
+              <div key={k} style={{ textAlign: "center", padding: "6px 0", background: "#F5F6F8", borderRadius: 8 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: c }}>{v}</div>
+                <div style={{ fontSize: 10, color: "#9EA6B2" }}>{k}</div>
               </div>
             ))}
           </div>
@@ -1987,15 +1987,15 @@ export default function App() {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
         {/* Header */}
-        <div style={{ background: "white", padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(0,0,0,0.07)", flexShrink: 0 }}>
+        <div style={{ background: "white", padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #E5E8EC", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {view === "editor" && (
-              <button onClick={() => setView("list")} style={{ border: "none", background: "none", fontSize: 20, cursor: "pointer", color: tokens.color.quaternary, padding: 0, lineHeight: 1 }}>‹</button>
+              <button onClick={() => setView("list")} style={{ border: "none", background: "none", fontSize: 20, cursor: "pointer", color: "#9EA6B2", padding: 0, lineHeight: 1 }}>‹</button>
             )}
-            <div style={{ fontSize: 16, fontWeight: 700, color: tokens.color.primary }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A" }}>
               {view === "editor" && selectedBanner ? (
                 <input value={selectedBanner.name} onChange={e => updateName(e.target.value)}
-                  style={{ fontSize: 16, fontWeight: 700, color: tokens.color.primary, border: "none", outline: "none", background: "transparent", fontFamily: tokens.font.family, minWidth: 200 }} />
+                  style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A", border: "none", outline: "none", background: "transparent", fontFamily: tokens.font.family, minWidth: 200 }} />
               ) : (
                 TEMPLATES[selectedTemplateId]?.label || "배너 관리"
               )}
@@ -2005,18 +2005,18 @@ export default function App() {
             {view === "editor" && selectedBanner && (
               <>
                 <select value={selectedBanner.status} onChange={e => changeStatus(selectedBanner.id, e.target.value)}
-                  style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #E0E0E0", fontSize: 12, fontFamily: tokens.font.family, cursor: "pointer" }}>
+                  style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #E5E8EC", fontSize: 12, fontFamily: tokens.font.family, cursor: "pointer", color: "#474747", background: "white" }}>
                   {Object.entries(STATUS_COLORS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                 </select>
                 <button onClick={() => setExportTarget(selectedBanner)}
-                  style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#1C1C1E", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: tokens.font.family }}>
+                  style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #E5E8EC", background: "white", color: "#474747", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: tokens.font.family }}>
                   ⬆ 내보내기
                 </button>
               </>
             )}
             {view === "list" && (
               <button onClick={createNew}
-                style={{ padding: "6px 16px", borderRadius: 8, border: "none", background: tokens.color.brand, color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: tokens.font.family }}>
+                style={{ padding: "6px 16px", borderRadius: 8, border: "none", background: "#3182F6", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: tokens.font.family }}>
                 + 새 배너
               </button>
             )}
@@ -2029,12 +2029,12 @@ export default function App() {
             {/* Search & filter */}
             <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
               <div style={{ position: "relative", flex: 1 }}>
-                <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: tokens.color.quaternary, fontSize: 14 }}>🔍</span>
+                <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9EA6B2", fontSize: 14 }}>🔍</span>
                 <input value={search} onChange={e => setSearch(e.target.value)} placeholder="배너 이름 검색..."
-                  style={{ width: "100%", padding: "8px 12px 8px 30px", borderRadius: 8, border: "1px solid #E0E0E0", fontSize: 13, fontFamily: tokens.font.family, outline: "none", boxSizing: "border-box" }} />
+                  style={{ width: "100%", padding: "8px 12px 8px 30px", borderRadius: 8, border: "1px solid #E5E8EC", fontSize: 13, fontFamily: tokens.font.family, outline: "none", boxSizing: "border-box", background: "white" }} />
               </div>
               <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #E0E0E0", fontSize: 13, fontFamily: tokens.font.family, cursor: "pointer", background: "white" }}>
+                style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #E5E8EC", fontSize: 13, fontFamily: tokens.font.family, cursor: "pointer", background: "white", color: "#474747" }}>
                 <option value="all">전체 상태</option>
                 {Object.entries(STATUS_COLORS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
               </select>
@@ -2042,8 +2042,8 @@ export default function App() {
 
             {/* Template selector row */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: tokens.color.secondary, marginBottom: 12 }}>템플릿 선택</div>
-              <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#6B7684", marginBottom: 10 }}>템플릿 선택</div>
+              <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
                 {Object.values(TEMPLATES).filter(t => {
                   if (selectedTemplateId === "bottom-sheet") return t.id === "bottom-sheet";
                   if (["card-large","card-medium","card-small","card-personal"].includes(selectedTemplateId)) return t.category === "card";
@@ -2052,7 +2052,7 @@ export default function App() {
                   return true;
                 }).map(t => (
                   <div key={t.id} onClick={() => setSelectedTemplateId(t.id)}
-                    style={{ padding: "8px 14px", borderRadius: 20, border: `1.5px solid ${selectedTemplateId === t.id ? tokens.color.brand : "#E0E0E0"}`, background: selectedTemplateId === t.id ? tokens.color.brandLight : "white", cursor: "pointer", whiteSpace: "nowrap", fontSize: 12, fontWeight: selectedTemplateId === t.id ? 700 : 400, color: selectedTemplateId === t.id ? tokens.color.brand : tokens.color.secondary, fontFamily: tokens.font.family, flexShrink: 0 }}>
+                    style={{ padding: "6px 14px", borderRadius: 20, border: `1.5px solid ${selectedTemplateId === t.id ? "#3182F6" : "#E5E8EC"}`, background: selectedTemplateId === t.id ? "#EEF5FF" : "white", cursor: "pointer", whiteSpace: "nowrap", fontSize: 12, fontWeight: selectedTemplateId === t.id ? 600 : 400, color: selectedTemplateId === t.id ? "#3182F6" : "#6B7684", fontFamily: tokens.font.family, flexShrink: 0 }}>
                     {t.label}
                   </div>
                 ))}
@@ -2099,7 +2099,7 @@ export default function App() {
           selectedBanner ? (
             <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
               {/* Canvas area */}
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflowY: "auto", background: "#EAEAEA" }}>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflowY: "auto", background: "#F5F6F8" }}>
                 <div style={{ marginBottom: 16, display: "flex", gap: 8 }}>
                   {[0.5, 0.7, 1.0].map(s => (
                     <button key={s} onClick={() => {}} style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #CCC", background: "white", fontSize: 11, cursor: "pointer", fontFamily: tokens.font.family }}>{Math.round(s * 100)}%</button>
@@ -2114,7 +2114,7 @@ export default function App() {
               </div>
 
               {/* Right panel */}
-              <div style={{ width: 320, background: selectedBanner.templateId === "sticky-bg" ? "#0D0E24" : "white", borderLeft: "1px solid rgba(0,0,0,0.08)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <div style={{ width: 320, background: selectedBanner.templateId === "sticky-bg" ? "#0D0E24" : "white", borderLeft: "1px solid #E5E8EC", display: "flex", flexDirection: "column", overflow: "hidden" }}>
                 <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
                   {selectedBanner.templateId === "bottom-sheet" ? (
                     <>
