@@ -1106,142 +1106,6 @@ function PersonalIllustPanel({ selectedId, onSelect }) {
   );
 }
 
-// ── Image Upload Panel ────────────────────────────────────────────────────
-// 각 배너 유형의 이미지 영역에 직접 이미지를 업로드하는 공통 컴포넌트
-// slotKey: 저장할 slotValues 키 (illustUrl / aiImageUrl)
-// imageSize: { w, h } — 권장 업로드 사이즈 안내용
-function ImageUploadPanel({ onApply, currentUrl, imageSize, label = "이미지 업로드", dark = false }) {
-  const [dragOver, setDragOver] = useState(false);
-  const [preview, setPreview] = useState(currentUrl || null);
-  const [error, setError] = useState("");
-  const fileInputRef = useRef(null);
-
-  const bg       = dark ? "#12132A" : "white";
-  const border   = dark ? "1px solid #2A2C52" : "1px solid #E8E0F0";
-  const textPri  = dark ? "white" : tokens.color.primary;
-  const textSec  = dark ? "rgba(255,255,255,0.55)" : tokens.color.secondary;
-  const textTer  = dark ? "rgba(255,255,255,0.35)" : tokens.color.quaternary;
-  const dropBg   = dark ? "#0D0E24" : "#FAF7FF";
-  const dropBorder = dragOver
-    ? `2px dashed ${tokens.color.brand}`
-    : dark ? "2px dashed #3A3C5A" : "2px dashed #D4C0F0";
-
-  const processFile = (file) => {
-    setError("");
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setError("이미지 파일만 업로드 가능합니다 (JPG, PNG, GIF, WebP)");
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      setError("파일 크기는 10MB 이하여야 합니다");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target.result);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setDragOver(false);
-    processFile(e.dataTransfer.files[0]);
-  };
-
-  const handleFileInput = (e) => {
-    processFile(e.target.files[0]);
-    e.target.value = ""; // reset so same file can be re-selected
-  };
-
-  return (
-    <div style={{ background: bg, border, borderRadius: 12, padding: 16, marginBottom: 16 }}>
-      {/* 헤더 */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-        <span style={{ fontSize: 16 }}>📁</span>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: textPri, fontFamily: tokens.font.family }}>{label}</div>
-          {imageSize && (
-            <div style={{ fontSize: 10, color: textTer, fontFamily: tokens.font.family }}>
-              권장 사이즈: {imageSize.w} × {imageSize.h}px
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 드래그 앤 드롭 영역 */}
-      <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={handleDrop}
-        style={{ border: dropBorder, borderRadius: 10, background: dropBg, padding: "18px 12px", textAlign: "center", cursor: "pointer", transition: "all 0.15s", marginBottom: 10 }}
-        onClick={() => fileInputRef.current?.click()}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          style={{ display: "none" }}
-          onChange={handleFileInput}
-        />
-        {preview ? (
-          <div style={{ position: "relative", display: "inline-block" }}>
-            <img src={preview} alt="preview" style={{ maxWidth: "100%", maxHeight: 120, borderRadius: 8, objectFit: "contain", display: "block" }} />
-            <div style={{ marginTop: 8, fontSize: 11, color: textSec, fontFamily: tokens.font.family }}>클릭해서 다른 이미지로 교체</div>
-          </div>
-        ) : (
-          <>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>🖼</div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: textSec, fontFamily: tokens.font.family, marginBottom: 4 }}>
-              {dragOver ? "여기에 놓으세요" : "클릭하거나 드래그해서 업로드"}
-            </div>
-            <div style={{ fontSize: 10, color: textTer, fontFamily: tokens.font.family }}>
-              JPG · PNG · GIF · WebP · 최대 10MB
-            </div>
-          </>
-        )}
-      </div>
-
-      {error && (
-        <div style={{ fontSize: 11, color: "#C62828", marginBottom: 8, fontFamily: tokens.font.family }}>⚠ {error}</div>
-      )}
-
-      {/* 적용 / 제거 버튼 */}
-      <div style={{ display: "flex", gap: 6 }}>
-        <button
-          onClick={() => { if (preview) onApply(preview); }}
-          disabled={!preview}
-          style={{ flex: 1, padding: "8px 0", borderRadius: 8, border: `1.5px solid ${tokens.color.brand}`, background: preview ? "transparent" : "#F5F5F5", color: preview ? tokens.color.brand : "#BDBDBD", fontSize: 12, fontWeight: 700, cursor: preview ? "pointer" : "not-allowed", fontFamily: tokens.font.family }}
-        >
-          배너에 적용
-        </button>
-        {(preview || currentUrl) && (
-          <button
-            onClick={() => { setPreview(null); onApply(null); }}
-            style={{ padding: "8px 14px", borderRadius: 8, border: "1.5px solid #FFCDD2", background: "#FFF5F5", color: "#C62828", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: tokens.font.family }}
-          >
-            제거
-          </button>
-        )}
-      </div>
-      {/* 직접 업로드 구분선 */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-        <div style={{ flex: 1, height: 1, background: "#2A2C52" }} />
-        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: tokens.font.family }}>또는 직접 업로드</span>
-        <div style={{ flex: 1, height: 1, background: "#2A2C52" }} />
-      </div>
-      <ImageUploadPanel
-        label="이미지 직접 업로드"
-        imageSize={{ w: 72, h: 48 }}
-        currentUrl={currentImageUrl}
-        onApply={onApplyImage}
-        dark={true}
-      />
-    </div>
-  );
-}
-
 
 // ── Toss-style Illustration Style Preset ────────────────────────────────
 // 토스 일러스트 스타일: 면 중심 플랫 벡터 + 소프트 멀티레이어 그림자 + 핑크 포인트
@@ -1419,21 +1283,6 @@ Return ONLY the English prompt string. No explanation, no JSON, no quotes, no ma
             <div style={{ fontSize: 10, color: tokens.color.quaternary, fontFamily: tokens.font.family }}>{t}</div>
           </div>
         ))}
-      </div>
-
-      {/* 직접 업로드 */}
-      <div style={{ marginTop: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-          <div style={{ flex: 1, height: 1, background: "#F0D0E0" }} />
-          <span style={{ fontSize: 11, color: tokens.color.quaternary, fontFamily: tokens.font.family }}>또는 직접 업로드</span>
-          <div style={{ flex: 1, height: 1, background: "#F0D0E0" }} />
-        </div>
-        <ImageUploadPanel
-          label="이미지 직접 업로드"
-          imageSize={{ w: 124, h: 130 }}
-          currentUrl={onApplyIllust.__currentUrl}
-          onApply={onApplyIllust}
-        />
       </div>
     </div>
   );
@@ -2195,31 +2044,6 @@ export default function App() {
                     </div>
                   ) : (
                     <>
-                      {/* hasImage 배너: 이미지 업로드 패널 표시 */}
-                      {TEMPLATES[selectedBanner.templateId]?.hasImage && (
-                        <>
-                          <ImageUploadPanel
-                            label="이미지 업로드"
-                            imageSize={(() => {
-                              const t = TEMPLATES[selectedBanner.templateId];
-                              if (t.id === "card-large")  return { w: 72,  h: 72  };
-                              if (t.id === "card-medium") return { w: 56,  h: 56  };
-                              if (t.id === "main-left")   return { w: 280, h: 239 };
-                              if (t.id === "main-center") return { w: 280, h: 200 };
-                              if (t.id === "main-gift")   return { w: 280, h: 200 };
-                              return { w: t.canvasW, h: t.canvasH };
-                            })()}
-                            currentUrl={selectedBanner.slotValues?.illustUrl}
-                            onApply={(url) => setBanners(p => p.map(b => b.id === selectedBannerId
-                              ? { ...b, slotValues: { ...b.slotValues, illustUrl: url } } : b))}
-                          />
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 16 }}>
-                            <div style={{ flex: 1, height: 1, background: "#E0E0E0" }} />
-                            <span style={{ fontSize: 11, color: tokens.color.quaternary, fontFamily: tokens.font.family }}>또는 AI로 생성</span>
-                            <div style={{ flex: 1, height: 1, background: "#E0E0E0" }} />
-                          </div>
-                        </>
-                      )}
                       <AIPanel template={selectedBanner.templateId} onApply={applyAI} />
                       <EditorPanel template={selectedBanner.templateId} slotValues={selectedBanner.slotValues} onChange={updateSlot} onBgChange={updateBg} bgColor={selectedBanner.bgColor} />
                     </>
