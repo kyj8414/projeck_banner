@@ -1376,49 +1376,65 @@ Return ONLY the English prompt string. No explanation, no JSON, no quotes, no ma
 // ── Sticky BG Panel 끝 ──
 
 // ── AI Generation Panel ──────────────────────────────────────────────────
-function AIPanel({ template, onApply }) {
+function AIPanel({ template, onApply, onApplyImage }) {
+  const [tab, setTab] = useState("copy"); // "copy" | "image"
+  // ── 카피 생성 상태 ──
   const [goal, setGoal] = useState("");
   const [keywords, setKeywords] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
+  const [copyError, setCopyError] = useState("");
+  // ── 이미지 생성 상태 ──
+  const [imgTopic, setImgTopic] = useState("");
+  const [imgStyle, setImgStyle] = useState("figma");
+  const [imgLoading, setImgLoading] = useState(false);
+  const [imgPreview, setImgPreview] = useState(null);
+  const [imgPrompt, setImgPrompt] = useState("");
+  const [imgError, setImgError] = useState("");
 
   const tmpl = TEMPLATES[template];
+  const hasImage = !!tmpl?.hasImage;
 
-  const generate = async () => {
-    if (!goal.trim()) { setError("프로모션 목표를 입력해 주세요."); return; }
-    setError(""); setLoading(true); setResult(null);
+  // ── 카피 생성 ──────────────────────────────────────────────────────────
+  const generateCopy = async () => {
+    if (!goal.trim()) { setCopyError("프로모션 목표를 입력해 주세요."); return; }
+    setCopyError(""); setLoading(true); setResult(null);
+    const slotDesc = tmpl.slots.filter(s => s.type === "text").map(s => `- ${s.label}(${s.id}): 최대 ${s.maxLen}자`).join("\n");
+    const personalRules = tmpl.id === "card-personal" ? `\n[개인화 배너 일러스트 규정]\n1. 추상적이거나 모호한 메타포는 절대 사용하지 않습니다.\n2. 면 중심(flat/solid) 일러스트 스타일만 사용합니다.\n3. 오브제 영역은 텍스트 영역을 침범하지 않아야 합니다.` : "";
+    const systemPrompt = `당신은 U+ (LG U플러스) 브랜드의 배너 카피라이터입니다.\n브랜드 톤: 친근하고 신뢰감 있으며, 혜택을 명확히 전달합니다.${personalRules}\n슬롯 규격에 맞게 한국어 카피를 생성하고, 반드시 JSON으로만 응답하세요.`;
+    const userPrompt = `[템플릿: ${tmpl.label}]\n슬롯 규격:\n${slotDesc}\n\n[프로모션 정보]\n목표: ${goal}\n키워드: ${keywords || "없음"}\n\n각 슬롯 id를 키로 하는 JSON 객체로 카피를 작성해 주세요.`;
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json",
+            "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY || "",
+            "anthropic-version": "2023-06-01",
+            "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system: systemPrompt, messages: [{ role: "user", content: userPrompt }] }),
+      });
+      const data = await res.json();
+      const text = data.content?.find(c => c.type === "text")?.text || "";
+      const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+      let suggestedBg = null;
+      if (tmpl.category === "card") suggestedBg = matchPaletteByKeywords(keywords, goal);
+      setResult({ ...parsed, _suggestedBg: suggestedBg });
+    } catch { setCopyError("생성 중 오류가 발생했습니다."); }
+    finally { setLoading(false); }
+  };
 
-    const slotDesc = tmpl.slots
-      .filter(s => s.type === "text")
-      .map(s => `- ${s.label}(${s.id}): 최대 ${s.maxLen}자`)
-      .join("\n");
-
-    // 개인화 배너 전용 규정 — AI 요청 시 자동 주입
-    const personalRules = tmpl.id === "card-personal" ? `
-[개인화 배너 일러스트 규정 — 반드시 준수]
-1. 추상적이거나 모호한 메타포는 절대 사용하지 않습니다. 오브제는 의미가 즉각 파악되는 구체적인 사물이어야 합니다.
-2. 면 중심(flat/solid) 일러스트 스타일만 사용합니다. 선형(outline), 사진(photo), 3D, AI 생성 스타일은 사용하지 않습니다.
-3. 오브제 영역은 텍스트 영역을 침범하지 않아야 합니다. 배너 좌측 아이콘 존(최대 40×40px)에만 배치합니다.
-위 규정에 맞지 않는 일러스트를 제안하거나 암시하는 카피는 생성하지 마십시오.` : "";
-
-    const systemPrompt = `당신은 U+ (LG U플러스) 브랜드의 배너 카피라이터입니다.
-브랜드 톤: 친근하고 신뢰감 있으며, 혜택을 명확히 전달합니다.
-브랜드 컬러: 핑크(#E10975). 강조 포인트에만 사용합니다.${personalRules}
-아래 슬롯 규격에 맞게 한국어 카피를 생성하고, 반드시 JSON으로만 응답하세요.
-다른 텍스트나 마크다운 없이 JSON 객체만 반환하세요.`;
-
-    const userPrompt = `[템플릿: ${tmpl.label}]
-슬롯 규격:
-${slotDesc}
-
-[프로모션 정보]
-목표: ${goal}
-키워드: ${keywords || "없음"}
-
-각 슬롯 id를 키로 하는 JSON 객체로 카피를 작성해 주세요.
-예시 형식: {"subtitle":"...", "title":"...", "desc":"..."}`;
-
+  // ── 이미지 생성 ──────────────────────────────────────────────────────────
+  const IMG_STYLES = [
+    { id: "figma",   label: "Figma 원본", badge: "추천" },
+    { id: "minimal", label: "미니멀" },
+    { id: "illust",  label: "일러스트" },
+    { id: "cute",    label: "큐트" },
+  ];
+  const generateImage = async () => {
+    if (!imgTopic.trim()) { setImgError("이미지 주제를 입력해 주세요."); return; }
+    setImgError(""); setImgLoading(true); setImgPreview(null); setImgPrompt("");
+    const styleGuide = imgStyle === "figma"
+      ? "Soft 3D flat illustration, layered bitmap blending, pink #FF5DAE accent, semi-transparent overlaps, gold sparkle stars, Korean fintech app promotional style"
+      : { minimal: "minimalist flat icon, 2-3 colors", illust: "flat vector illustration", cute: "cute kawaii icon, rounded shapes" }[imgStyle];
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -1427,96 +1443,129 @@ ${slotDesc}
             "anthropic-version": "2023-06-01",
             "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
+          model: "claude-sonnet-4-20250514", max_tokens: 300,
+          system: `You are a DALL-E 3 prompt engineer for Korean mobile app banner illustrations.\nStyle: ${styleGuide}\nReturn ONLY the English prompt string.`,
+          messages: [{ role: "user", content: `Subject: ${imgTopic}` }],
         }),
       });
       const data = await res.json();
-      const text = data.content?.find(c => c.type === "text")?.text || "";
-      const clean = text.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(clean);
-
-      // 카드 배너: 컨셉 키워드 기반 팔레트 자동 매핑
-      let suggestedBg = null;
-      if (tmpl.category === "card") {
-        suggestedBg = matchPaletteByKeywords(keywords, goal);
-      }
-      setResult({ ...parsed, _suggestedBg: suggestedBg });
-    } catch (e) {
-      setError("생성 중 오류가 발생했습니다. 다시 시도해 주세요.");
-    } finally {
-      setLoading(false);
-    }
+      const dp = data.content?.find(c => c.type === "text")?.text?.trim() || "";
+      setImgPrompt(dp);
+      const seed = encodeURIComponent(imgTopic.split(" ")[0]);
+      setImgPreview(`https://source.unsplash.com/280x200/?${seed},minimal,white&sig=${Date.now()}`);
+    } catch { setImgError("생성 중 오류가 발생했습니다."); }
+    finally { setImgLoading(false); }
   };
 
   return (
-    <div style={{ background: "#FFF8FB", border: "1px solid #F5D0E4", borderRadius: 12, padding: 20, marginBottom: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-        <span style={{ fontSize: 18 }}>✨</span>
-        <span style={{ fontSize: 14, fontWeight: 700, color: tokens.color.primary, fontFamily: tokens.font.family }}>AI 카피 생성</span>
+    <div style={{ background: "#FFF8FB", border: "1px solid #F5D0E4", borderRadius: 12, marginBottom: 16, overflow: "hidden" }}>
+      {/* ── 헤더 ── */}
+      <div style={{ padding: "14px 16px 0", display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <span style={{ fontSize: 16 }}>✨</span>
+        <span style={{ fontSize: 14, fontWeight: 700, color: tokens.color.primary, fontFamily: tokens.font.family }}>AI 에디터</span>
       </div>
 
-      <div style={{ marginBottom: 10 }}>
-        <label style={{ fontSize: 12, fontWeight: 600, color: tokens.color.secondary, display: "block", marginBottom: 5, fontFamily: tokens.font.family }}>프로모션 목표 *</label>
-        <input
-          value={goal}
-          onChange={e => setGoal(e.target.value)}
-          placeholder="예: 요금제 변경 유도, 데이터 충전 혜택 강조"
-          style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #E8C0D4", fontSize: 13, fontFamily: tokens.font.family, boxSizing: "border-box", outline: "none", background: "white" }}
-        />
-      </div>
-      <div style={{ marginBottom: 14 }}>
-        <label style={{ fontSize: 12, fontWeight: 600, color: tokens.color.secondary, display: "block", marginBottom: 5, fontFamily: tokens.font.family }}>키워드 (선택)</label>
-        <input
-          value={keywords}
-          onChange={e => setKeywords(e.target.value)}
-          placeholder="예: 스타벅스, 쿠폰, 데이터, 무제한"
-          style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #E8C0D4", fontSize: 13, fontFamily: tokens.font.family, boxSizing: "border-box", outline: "none", background: "white" }}
-        />
+      {/* ── 탭 ── */}
+      <div style={{ display: "flex", borderBottom: "1px solid #F5D0E4", paddingLeft: 16 }}>
+        {[
+          { id: "copy",  label: "카피 생성" },
+          ...(hasImage ? [{ id: "image", label: "이미지 생성" }] : []),
+        ].map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            style={{ padding: "8px 14px", border: "none", background: "transparent", borderBottom: tab === t.id ? `2px solid ${tokens.color.brand}` : "2px solid transparent", fontSize: 12, fontWeight: tab === t.id ? 700 : 400, color: tab === t.id ? tokens.color.brand : tokens.color.secondary, cursor: "pointer", fontFamily: tokens.font.family, marginBottom: -1 }}>
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {error && <div style={{ fontSize: 12, color: "#C62828", marginBottom: 10, fontFamily: tokens.font.family }}>{error}</div>}
-
-      <button
-        onClick={generate}
-        disabled={loading}
-        style={{ width: "100%", padding: "9px 0", borderRadius: 8, border: "none", background: loading ? "#F0A0C0" : tokens.color.brand, color: "white", fontSize: 13, fontWeight: 700, fontFamily: tokens.font.family, cursor: loading ? "not-allowed" : "pointer" }}
-      >
-        {loading ? "생성 중..." : "✨ 카피 생성하기"}
-      </button>
-
-      {result && (
-        <div style={{ marginTop: 14, background: "white", borderRadius: 8, padding: 14, border: "1px solid #F0D0E0" }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: tokens.color.secondary, marginBottom: 8, fontFamily: tokens.font.family }}>생성된 카피</div>
-          {tmpl.slots.map(slot => (
-            <div key={slot.id} style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 10, color: tokens.color.quaternary, fontFamily: tokens.font.family }}>{slot.label}</div>
-              <div style={{ fontSize: 13, color: tokens.color.primary, fontFamily: tokens.font.family, padding: "4px 0" }}>{result[slot.id] || "-"}</div>
+      <div style={{ padding: 16 }}>
+        {/* ── 카피 생성 탭 ── */}
+        {tab === "copy" && (
+          <>
+            <div style={{ marginBottom: 10 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: tokens.color.secondary, display: "block", marginBottom: 5, fontFamily: tokens.font.family }}>프로모션 목표 *</label>
+              <input value={goal} onChange={e => setGoal(e.target.value)} placeholder="예: 요금제 변경 유도, 데이터 충전 혜택 강조"
+                style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #E8C0D4", fontSize: 13, fontFamily: tokens.font.family, boxSizing: "border-box", outline: "none", background: "white" }} />
             </div>
-          ))}
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: tokens.color.secondary, display: "block", marginBottom: 5, fontFamily: tokens.font.family }}>키워드 (선택)</label>
+              <input value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="예: 스타벅스, 쿠폰, 데이터, 무제한"
+                style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #E8C0D4", fontSize: 13, fontFamily: tokens.font.family, boxSizing: "border-box", outline: "none", background: "white" }} />
+            </div>
+            {copyError && <div style={{ fontSize: 11, color: "#C62828", marginBottom: 8, fontFamily: tokens.font.family }}>{copyError}</div>}
+            <button onClick={generateCopy} disabled={loading}
+              style={{ width: "100%", padding: "9px 0", borderRadius: 8, border: "none", background: loading ? "#F0A0C0" : tokens.color.brand, color: "white", fontSize: 13, fontWeight: 700, fontFamily: tokens.font.family, cursor: loading ? "not-allowed" : "pointer" }}>
+              {loading ? "생성 중..." : "✨ 카피 생성하기"}
+            </button>
+            {result && (
+              <div style={{ marginTop: 12, background: "white", borderRadius: 8, padding: 12, border: "1px solid #F0D0E0" }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: tokens.color.secondary, marginBottom: 8, fontFamily: tokens.font.family }}>생성된 카피</div>
+                {tmpl.slots.filter(s => s.type === "text").map(slot => (
+                  <div key={slot.id} style={{ marginBottom: 6 }}>
+                    <div style={{ fontSize: 10, color: tokens.color.quaternary, fontFamily: tokens.font.family }}>{slot.label}</div>
+                    <div style={{ fontSize: 13, color: tokens.color.primary, fontFamily: tokens.font.family, padding: "3px 0" }}>{result[slot.id] || "-"}</div>
+                  </div>
+                ))}
+                {result._suggestedBg && (
+                  <div style={{ marginTop: 8, padding: "8px 10px", borderRadius: 8, background: result._suggestedBg.hex, border: "1px solid rgba(0,0,0,0.07)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: "#333", fontFamily: tokens.font.family }}>🎨 AI 추천 배경: {result._suggestedBg.name} {result._suggestedBg.hex}</div>
+                  </div>
+                )}
+                <button onClick={() => onApply(result)}
+                  style={{ marginTop: 8, width: "100%", padding: "8px 0", borderRadius: 8, border: `1.5px solid ${tokens.color.brand}`, background: "transparent", color: tokens.color.brand, fontSize: 13, fontWeight: 700, fontFamily: tokens.font.family, cursor: "pointer" }}>
+                  에디터에 적용 {result._suggestedBg ? "(배경 포함)" : ""}
+                </button>
+              </div>
+            )}
+          </>
+        )}
 
-          {/* 카드 배너: AI 추천 배경 팔레트 색상 표시 */}
-          {result._suggestedBg && (
-            <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 8, background: result._suggestedBg.hex, border: "1px solid rgba(0,0,0,0.08)", marginBottom: 4 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "#333", marginBottom: 4, fontFamily: tokens.font.family }}>🎨 AI 추천 배경</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 20, height: 20, borderRadius: 5, background: result._suggestedBg.hex, border: "1px solid rgba(0,0,0,0.12)" }} />
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#333", fontFamily: tokens.font.family }}>{result._suggestedBg.name}</span>
-                <span style={{ fontSize: 11, color: "#666", fontFamily: "monospace" }}>{result._suggestedBg.hex}</span>
+        {/* ── 이미지 생성 탭 ── */}
+        {tab === "image" && (
+          <>
+            <div style={{ marginBottom: 10 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: tokens.color.secondary, display: "block", marginBottom: 5, fontFamily: tokens.font.family }}>이미지 주제 *</label>
+              <input value={imgTopic} onChange={e => setImgTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && generateImage()}
+                placeholder="예: 스타벅스 커피잔, 선물박스, 스마트폰"
+                style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #E8C0D4", fontSize: 13, fontFamily: tokens.font.family, boxSizing: "border-box", outline: "none", background: "white" }} />
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: tokens.color.secondary, display: "block", marginBottom: 6, fontFamily: tokens.font.family }}>스타일</label>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                {IMG_STYLES.map(s => (
+                  <div key={s.id} onClick={() => setImgStyle(s.id)}
+                    style={{ padding: "7px 10px", borderRadius: 8, cursor: "pointer", position: "relative", border: imgStyle === s.id ? `1.5px solid ${s.id === "figma" ? "#FFD700" : tokens.color.brand}` : "1.5px solid #E8C0D4", background: imgStyle === s.id ? (s.id === "figma" ? "rgba(255,215,0,0.08)" : tokens.color.brandLight) : "white" }}>
+                    {s.badge && <span style={{ position: "absolute", top: -6, right: 6, fontSize: 9, padding: "1px 5px", borderRadius: 8, background: "#FFD700", color: "#000", fontWeight: 700, fontFamily: tokens.font.family }}>{s.badge}</span>}
+                    <div style={{ fontSize: 11, fontWeight: 600, color: imgStyle === s.id ? (s.id === "figma" ? "#B8860B" : tokens.color.brand) : tokens.color.secondary, fontFamily: tokens.font.family }}>{s.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
-
-          <button
-            onClick={() => onApply(result)}
-            style={{ marginTop: 8, width: "100%", padding: "8px 0", borderRadius: 8, border: `1.5px solid ${tokens.color.brand}`, background: "transparent", color: tokens.color.brand, fontSize: 13, fontWeight: 700, fontFamily: tokens.font.family, cursor: "pointer" }}
-          >
-            에디터에 적용 {result._suggestedBg ? "(배경 포함)" : ""}
-          </button>
-        </div>
-      )}
+            {imgError && <div style={{ fontSize: 11, color: "#C62828", marginBottom: 8, fontFamily: tokens.font.family }}>{imgError}</div>}
+            <button onClick={generateImage} disabled={imgLoading}
+              style={{ width: "100%", padding: "9px 0", borderRadius: 8, border: "none", background: imgLoading ? "#F0A0C0" : tokens.color.brand, color: "white", fontSize: 13, fontWeight: 700, fontFamily: tokens.font.family, cursor: imgLoading ? "not-allowed" : "pointer" }}>
+              {imgLoading ? "생성 중..." : "🎨 이미지 생성하기"}
+            </button>
+            {imgPrompt && (
+              <div style={{ marginTop: 10, padding: "7px 10px", borderRadius: 8, background: "white", border: "1px solid #F0D0E0" }}>
+                <div style={{ fontSize: 9, color: tokens.color.quaternary, marginBottom: 3, fontFamily: tokens.font.family }}>DALL-E 프롬프트</div>
+                <div style={{ fontSize: 10, color: tokens.color.secondary, fontFamily: "monospace", lineHeight: 1.5, wordBreak: "break-all" }}>{imgPrompt}</div>
+              </div>
+            )}
+            {imgPreview && onApplyImage && (
+              <div style={{ marginTop: 10 }}>
+                <img src={imgPreview} alt="" style={{ width: "100%", borderRadius: 8, objectFit: "cover", maxHeight: 120, display: "block", marginBottom: 8 }} />
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button onClick={() => onApplyImage(imgPreview)}
+                    style={{ flex: 1, padding: "7px 0", borderRadius: 8, border: `1.5px solid ${tokens.color.brand}`, background: "transparent", color: tokens.color.brand, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: tokens.font.family }}>배너에 적용</button>
+                  <button onClick={generateImage}
+                    style={{ flex: 1, padding: "7px 0", borderRadius: 8, border: "1.5px solid #E0E0E0", background: "white", color: tokens.color.secondary, fontSize: 11, cursor: "pointer", fontFamily: tokens.font.family }}>다시 생성</button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -2069,26 +2118,31 @@ export default function App() {
                 <div style={{ flex: 1, overflowY: "auto", padding: 20 }}>
                   {selectedBanner.templateId === "bottom-sheet" ? (
                     <>
-                      <BottomSheetIllustPanel
-                        currentUrl={selectedBanner.slotValues?.illustUrl}
-                        onApplyIllust={(url) => setBanners(p => p.map(b => b.id === selectedBannerId
-                          ? { ...b, slotValues: { ...b.slotValues, illustUrl: url } } : b))}
-                      />
-                      <AIPanel template={selectedBanner.templateId} onApply={applyAI} />
+                      {/* 1. AI 에디터 */}
+                      <AIPanel template={selectedBanner.templateId} onApply={applyAI}
+                        onApplyImage={(url) => setBanners(p => p.map(b => b.id === selectedBannerId ? { ...b, slotValues: { ...b.slotValues, illustUrl: url } } : b))} />
+                      {/* 2. 이미지 직접 업로드 */}
+                      <ImageUploadPanel imageSize={{ w: 124, h: 130 }} currentUrl={selectedBanner.slotValues?.illustUrl}
+                        onApply={(url) => setBanners(p => p.map(b => b.id === selectedBannerId ? { ...b, slotValues: { ...b.slotValues, illustUrl: url } } : b))} />
+                      {/* 3. 텍스트 편집 */}
                       <EditorPanel template={selectedBanner.templateId} slotValues={selectedBanner.slotValues} onChange={updateSlot} onBgChange={updateBg} bgColor={selectedBanner.bgColor} />
                     </>
                   ) : selectedBanner.templateId === "card-personal" ? (
                     <>
+                      {/* 1. AI 에디터 */}
+                      <AIPanel template={selectedBanner.templateId} onApply={applyAI} />
+                      {/* 2. 일러스트 라이브러리 */}
                       <PersonalIllustPanel
                         selectedId={selectedBanner.slotValues?.illustId}
                         onSelect={(id) => setBanners(p => p.map(b => b.id === selectedBannerId
                           ? { ...b, slotValues: { ...b.slotValues, illustId: id } } : b))}
                       />
-                      <AIPanel template={selectedBanner.templateId} onApply={applyAI} />
+                      {/* 3. 텍스트 편집 */}
                       <EditorPanel template={selectedBanner.templateId} slotValues={selectedBanner.slotValues} onChange={updateSlot} onBgChange={updateBg} bgColor={selectedBanner.bgColor} />
                     </>
                   ) : selectedBanner.templateId === "sticky-bg" ? (
                     <>
+                      {/* 1. AI 에디터 (이미지 생성 탭 포함) */}
                       <StickyBgPanel
                         currentBg={selectedBanner.slotValues?.customBg || selectedBanner.bgColor || "#1C1D3C"}
                         onBgChange={(hex) => setBanners(p => p.map(b => b.id === selectedBannerId
@@ -2097,15 +2151,12 @@ export default function App() {
                           ? { ...b, slotValues: { ...b.slotValues, aiImageUrl: url } } : b))}
                         currentImageUrl={selectedBanner.slotValues?.aiImageUrl}
                       />
-                      {/* 이미지 직접 업로드 */}
-                      <ImageUploadPanel
-                        imageSize={{ w: 72, h: 48 }}
+                      {/* 2. 이미지 직접 업로드 */}
+                      <ImageUploadPanel imageSize={{ w: 72, h: 48 }} dark={true}
                         currentUrl={selectedBanner.slotValues?.aiImageUrl}
-                        dark={true}
                         onApply={(url) => setBanners(p => p.map(b => b.id === selectedBannerId
-                          ? { ...b, slotValues: { ...b.slotValues, aiImageUrl: url } } : b))}
-                      />
-                      {/* 텍스트 문구 편집 */}
+                          ? { ...b, slotValues: { ...b.slotValues, aiImageUrl: url } } : b))} />
+                      {/* 3. 텍스트 문구 편집 */}
                       <div style={{ background:"#12132A", border:"1px solid #2A2C52", borderRadius:12, padding:16 }}>
                         <div style={{ fontSize:12, fontWeight:700, color:"rgba(255,255,255,0.7)", marginBottom:10, fontFamily:tokens.font.family }}>텍스트 문구 편집</div>
                         {TEMPLATES["sticky-bg"].slots.filter(s => s.type === "text").map(slot => {
@@ -2126,43 +2177,42 @@ export default function App() {
                       </div>
                     </>
                   ) : selectedBanner.templateId === "sticky-no-bg" ? (
-                    /* 배경 없는 케이스: 텍스트 편집만 */
                     <div>
-                      <div style={{ background:"#F7F7F7", borderRadius:12, padding:14, marginBottom:16, border:"1px solid #E0E0E0" }}>
-                        <div style={{ fontSize:12, fontWeight:700, color:tokens.color.secondary, marginBottom:4, fontFamily:tokens.font.family }}>배경 없는 케이스</div>
-                        <div style={{ fontSize:11, color:tokens.color.quaternary, fontFamily:tokens.font.family }}>흰 배경에 텍스트만 표시됩니다. 그래픽 없음.</div>
-                      </div>
+                      {/* 1. AI 에디터 */}
                       <AIPanel template={selectedBanner.templateId} onApply={applyAI} />
+                      {/* 2. 텍스트 편집 */}
                       <EditorPanel template={selectedBanner.templateId} slotValues={selectedBanner.slotValues} onChange={updateSlot} onBgChange={updateBg} bgColor={selectedBanner.bgColor} />
                     </div>
                   ) : (
                     <>
+                      {/* 1. AI 에디터 (최상단) */}
+                      <AIPanel
+                        template={selectedBanner.templateId}
+                        onApply={applyAI}
+                        onApplyImage={TEMPLATES[selectedBanner.templateId]?.hasImage
+                          ? (url) => setBanners(p => p.map(b => b.id === selectedBannerId ? { ...b, slotValues: { ...b.slotValues, illustUrl: url } } : b))
+                          : null}
+                      />
+                      {/* 2. 이미지 직접 업로드 (AI 에디터 바로 아래, hasImage 배너만) */}
                       {TEMPLATES[selectedBanner.templateId]?.hasImage && (
-                        <>
-                          <ImageUploadPanel
-                            imageSize={(() => {
-                              const id = selectedBanner.templateId;
-                              if (id === "card-large")  return { w: 72,  h: 104 };
-                              if (id === "card-medium") return { w: 56,  h: 56  };
-                              if (id === "main-left")   return { w: 280, h: 239 };
-                              if (id === "main-center") return { w: 280, h: 200 };
-                              if (id === "main-gift")   return { w: 280, h: 200 };
-                              if (id === "bottom-sheet") return { w: 124, h: 130 };
-                              return null;
-                            })()}
-                            currentUrl={selectedBanner.slotValues?.illustUrl}
-                            onApply={(url) => setBanners(p => p.map(b =>
-                              b.id === selectedBannerId ? { ...b, slotValues: { ...b.slotValues, illustUrl: url } } : b
-                            ))}
-                          />
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 14 }}>
-                            <div style={{ flex: 1, height: 1, background: "#E0E0E0" }} />
-                            <span style={{ fontSize: 10, color: tokens.color.quaternary, fontFamily: tokens.font.family }}>또는 AI로 생성</span>
-                            <div style={{ flex: 1, height: 1, background: "#E0E0E0" }} />
-                          </div>
-                        </>
+                        <ImageUploadPanel
+                          imageSize={(() => {
+                            const id = selectedBanner.templateId;
+                            if (id === "card-large")   return { w: 72,  h: 104 };
+                            if (id === "card-medium")  return { w: 56,  h: 56  };
+                            if (id === "main-left")    return { w: 280, h: 239 };
+                            if (id === "main-center")  return { w: 280, h: 200 };
+                            if (id === "main-gift")    return { w: 280, h: 200 };
+                            if (id === "bottom-sheet") return { w: 124, h: 130 };
+                            return null;
+                          })()}
+                          currentUrl={selectedBanner.slotValues?.illustUrl}
+                          onApply={(url) => setBanners(p => p.map(b =>
+                            b.id === selectedBannerId ? { ...b, slotValues: { ...b.slotValues, illustUrl: url } } : b
+                          ))}
+                        />
                       )}
-                      <AIPanel template={selectedBanner.templateId} onApply={applyAI} />
+                      {/* 3. 텍스트 편집 */}
                       <EditorPanel template={selectedBanner.templateId} slotValues={selectedBanner.slotValues} onChange={updateSlot} onBgChange={updateBg} bgColor={selectedBanner.bgColor} />
                     </>
                   )}
