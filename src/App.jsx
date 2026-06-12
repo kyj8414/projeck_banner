@@ -2003,8 +2003,6 @@ export default function App() {
 
         {/* Body */}
         {view === "list" ? (
-          {/* ── Figma 2:647: bg:#F0F2F5 / 2:652 title x:50 y:50 30px ExtraBold #4E5968
-               2:673 left w:620 / 2:670 right w:620 ── */}
           <div style={{ flex: 1, overflow: "hidden", background: "#F0F2F5", position: "relative" }}>
 
             {/* 페이지 제목 — Figma 2:652: x:50 y:50 / 30px ExtraBold #4E5968 */}
