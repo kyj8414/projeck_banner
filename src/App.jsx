@@ -1922,9 +1922,22 @@ export default function App() {
                   {/* 그룹 헤더 — Figma 2:621: h:60 p:20 */}
                   <div onClick={() => setOpenGroups(p => ({ ...p, [item.id]: !p[item.id] }))}
                     style={{ height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", cursor: "pointer" }}>
-                    <span style={{ fontSize: 16, fontWeight: 600, color: openGroups[item.id] ? "#2272EB" : "#4E5968", fontFamily: tokens.font.family }}>{item.label}</span>
-                    <img src={openGroups[item.id] ? "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNNSA3LjVMMTAgMTIuNUwxNSA3LjUiIHN0cm9rZT0iI0IwQjhDMSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=" : "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNNSA3LjVMMTAgMTIuNUwxNSA3LjUiIHN0cm9rZT0iI0IwQjhDMSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4="}
-                      alt="" style={{ width: 20, height: 20, display: "block", transform: openGroups[item.id] ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
+                    {/* 텍스트: 열림+선택=파란색, 나머지=#4E5968 */}
+                    <span style={{ fontSize: 16, fontWeight: 600, fontFamily: tokens.font.family,
+                      color: (openGroups[item.id] && item.children?.some(c => c.id === selectedTemplateId)) ? "#2272EB" : "#4E5968"
+                    }}>{item.label}</span>
+                    {/* chevron:
+                        열림+선택 → icon_chevron_sel (∨ 파란색)
+                        열림+미선택 → icon_chevron (∧ 검정)
+                        닫힘 → icon_chevron rotate(180deg) (∨ 검정)
+                    */}
+                    {(() => {
+                      const isSel = openGroups[item.id] && item.children?.some(c => c.id === selectedTemplateId);
+                      const isOpen = openGroups[item.id];
+                      if (isSel) return <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik01LjI0NDA4IDcuNzQ0MDhDNS41Njk1MiA3LjQxODY0IDYuMDk3MTUgNy40MTg2NCA2LjQyMjU5IDcuNzQ0MDhMMTAgMTEuMzIxNUwxMy41Nzc0IDcuNzQ0MDhDMTMuOTAyOCA3LjQxODY0IDE0LjQzMDUgNy40MTg2NCAxNC43NTU5IDcuNzQ0MDhDMTUuMDgxNCA4LjA2OTUyIDE1LjA4MTQgOC41OTcxNSAxNC43NTU5IDguOTIyNTlMMTAuNTg5MyAxMy4wODkzQzEwLjI2MzggMTMuNDE0NyA5LjczNjE4IDEzLjQxNDcgOS40MTA3NSAxMy4wODkzTDUuMjQ0MDggOC45MjI1OUM0LjkxODY0IDguNTk3MTUgNC45MTg2NCA4LjA2OTUyIDUuMjQ0MDggNy43NDQwOFoiIGZpbGw9IiMyMjcyRUIiLz4KPC9zdmc+Cg==" alt="" style={{ width: 20, height: 20, display: "block" }} />;
+                      if (isOpen) return <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xNC43NTU5IDEyLjI1NTlDMTQuNDMwNSAxMi41ODE0IDEzLjkwMjggMTIuNTgxNCAxMy41Nzc0IDEyLjI1NTlMMTAgOC42Nzg1MUw2LjQyMjU5IDEyLjI1NTlDNi4wOTcxNSAxMi41ODE0IDUuNTY5NTEgMTIuNTgxNCA1LjI0NDA4IDEyLjI1NTlDNC45MTg2NCAxMS45MzA1IDQuOTE4NjQgMTEuNDAyOCA1LjI0NDA4IDExLjA3NzRMOS40MTA3NCA2LjkxMDc0QzkuNzM2MTggNi41ODUzMSAxMC4yNjM4IDYuNTg1MzEgMTAuNTg5MyA2LjkxMDc0TDE0Ljc1NTkgMTEuMDc3NEMxNS4wODE0IDExLjQwMjggMTUuMDgxNCAxMS45MzA1IDE0Ljc1NTkgMTIuMjU1OVoiIGZpbGw9IiMxODFBMUIiLz4KPC9zdmc+Cg==" alt="" style={{ width: 20, height: 20, display: "block" }} />;
+                      return <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xNC43NTU5IDEyLjI1NTlDMTQuNDMwNSAxMi41ODE0IDEzLjkwMjggMTIuNTgxNCAxMy41Nzc0IDEyLjI1NTlMMTAgOC42Nzg1MUw2LjQyMjU5IDEyLjI1NTlDNi4wOTcxNSAxMi41ODE0IDUuNTY5NTEgMTIuNTgxNCA1LjI0NDA4IDEyLjI1NTlDNC45MTg2NCAxMS45MzA1IDQuOTE4NjQgMTEuNDAyOCA1LjI0NDA4IDExLjA3NzRMOS40MTA3NCA2LjkxMDc0QzkuNzM2MTggNi41ODUzMSAxMC4yNjM4IDYuNTg1MzEgMTAuNTg5MyA2LjkxMDc0TDE0Ljc1NTkgMTEuMDc3NEMxNS4wODE0IDExLjQwMjggMTUuMDgxNCAxMS45MzA1IDE0Ljc1NTkgMTIuMjU1OVoiIGZpbGw9IiMxODFBMUIiLz4KPC9zdmc+Cg==" alt="" style={{ width: 20, height: 20, display: "block", transform: "rotate(180deg)" }} />;
+                    })()}
                   </div>
                   {/* 하위 — Figma 2:627~634: h:59 bg:#EFF2F6 pl:20 */}
                   {openGroups[item.id] && item.children.map(child => (
