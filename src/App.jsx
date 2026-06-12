@@ -1950,7 +1950,6 @@ export default function App() {
                   ))}
                 </>
               ) : (
-                {/* 일반 — Figma 2:618: h:59 p:20 */}
                 <div onClick={() => { setSelectedTemplateId(item.id); setSelectedBannerId(null); setView("list"); }}
                   style={{ height: 59, display: "flex", alignItems: "center", padding: "0 20px", cursor: "pointer",
                     fontSize: 16, fontWeight: 600, fontFamily: tokens.font.family,
@@ -2052,7 +2051,6 @@ export default function App() {
                       배너가 없습니다.<br/>템플릿 생성하기를 눌러 새 배너를 만들어 보세요.
                     </div>
                   ) : filteredBanners.map(b => (
-                    {/* 배너 카드 — Figma 2:1295: w:540 h:86 bg:white rounded:8 */}
                     <div key={b.id}
                       onClick={() => { setSelectedBannerId(b.id); setView("editor"); }}
                       style={{ background: "white", height: 86, borderRadius: 8, overflow: "hidden", position: "relative", cursor: "pointer", flexShrink: 0 }}>
