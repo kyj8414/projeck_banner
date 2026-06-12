@@ -1906,43 +1906,58 @@ export default function App() {
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: tokens.font.family, background: "#F5F6F8", overflow: "hidden" }}>
 
-      {/* ── Sidebar — Figma 2:617: w:200 border-r:#EDEFF1 ── */}
+      {/* ── Sidebar — Figma: w:200 / border-r:#EDEFF1 ── */}
       <div style={{ width: 200, background: "white", display: "flex", flexDirection: "column", flexShrink: 0, borderRight: "1px solid #EDEFF1" }}>
-        {/* Logo — Figma 2:614: h:80 border-b:#DFE2E5 / logo_u+one x:20 y:30 w:66.5 h:20 */}
-        <div style={{ height: 80, display: "flex", alignItems: "center", paddingLeft: 20, borderBottom: "1px solid #DFE2E5", flexShrink: 0 }}>
-          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMTQiIHZpZXdCb3g9IjAgMCAyNCAxNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMuMDMyMjMgMFY4LjQzMzU5QzMuMDMyMjMgOS45NDI1MSAzLjk0NzM3IDExLjE2NiA1Ljc0MjE5IDExLjE2NkM3LjUzNjczIDExLjE2NTggOC40NTExNyA5Ljk0MjM5IDguNDUxMTcgOC40MzM1OVYwSDExLjQ4MzRWOC4wMjYzN0MxMS40ODM0IDExLjQ3IDkuNjY1MjQgMTMuOTk5OCA1Ljc0MjE5IDE0QzEuODE4ODUgMTQgMCAxMS40NzAxIDAgOC4wMjYzN1YwSDMuMDMyMjNaTTE5LjU3MzIgMC4wMDM5MDYyNVY0LjAwMDk4SDIzLjMzMTFWNi42MjAxMkgxOS41NzMyVjEwLjUwNjhIMTYuOTY2OFY2LjYyMDEySEgxMy4xNzk3VjQuMDAwOThIMTYuOTY2OFYwLjAwMzkwNjI1SDE5LjU3MzJaIiBmaWxsPSIjRkYyRTk4Ii8+Cjwvc3ZnPg==" alt="U+one" style={{ width: 23.75, height: 13.78, display: "block" }} />
+        {/* Logo — Figma: h:80 / border-b */}
+        <div style={{ height: 80, padding: "0 20px", display: "flex", alignItems: "center", borderBottom: "1px solid #EDEFF1", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            {/* U+one SVG 로고 */}
+            <img src={`data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMTQiIHZpZXdCb3g9IjAgMCAyNCAxNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTMuMDMyMjMgMFY4LjQzMzU5QzMuMDMyMjMgOS45NDI1MSAzLjk0NzM3IDExLjE2NiA1Ljc0MjE5IDExLjE2NkM3LjUzNjczIDExLjE2NTggOC40NTExNyA5Ljk0MjM5IDguNDUxMTcgOC40MzM1OVYwSDExLjQ4MzRWOC4wMjYzN0MxMS40ODM0IDExLjQ3IDkuNjY1MjQgMTMuOTk5OCA1Ljc0MjE5IDE0QzEuODE4ODUgMTQgMCAxMS40NzAxIDAgOC4wMjYzN1YwSDMuMDMyMjNaTTE5LjU3MzIgMC4wMDM5MDYyNVY0LjAwMDk4SDIzLjMzMTFWNi42MjAxMkgxOS41NzMyVjEwLjUwNjhIMTYuOTY2OFY2LjYyMDEySEgxMy4xNzk3VjQuMDAwOThIMTYuOTY2OFYwLjAwMzkwNjI1SDE5LjU3MzJaIiBmaWxsPSIjRkYyRTk4Ii8+Cjwvc3ZnPg==`}
+              alt="U+one" style={{ width: 24, height: 14, display: "block" }} />
+          </div>
         </div>
 
-        {/* Nav — Figma: 01 h:59 / 02그룹 h:60 / 02-1 sub h:59 bg:#EFF2F6 */}
+        {/* Nav — Figma: p:20 / 16px / SemiBold / #4E5968 */}
         <div style={{ flex: 1, overflowY: "auto" }}>
           {MENU.map(item => (
             <div key={item.id}>
               {item.isGroup ? (
                 <>
-                  {/* 그룹 헤더 — Figma 2:621: h:60 p:20 */}
-                  <div onClick={() => setOpenGroups(p => ({ ...p, [item.id]: !p[item.id] }))}
-                    style={{ height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", cursor: "pointer" }}>
+                  {/* 그룹 헤더 */}
+                  <div
+                    onClick={() => setOpenGroups(p => ({ ...p, [item.id]: !p[item.id] }))}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 20, cursor: "pointer" }}
+                  >
                     <span style={{ fontSize: 16, fontWeight: 600, color: openGroups[item.id] ? "#2272EB" : "#4E5968", fontFamily: tokens.font.family }}>{item.label}</span>
-                    <img src={openGroups[item.id] ? "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNNSA3LjVMMTAgMTIuNUwxNSA3LjUiIHN0cm9rZT0iI0IwQjhDMSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=" : "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNNSA3LjVMMTAgMTIuNUwxNSA3LjUiIHN0cm9rZT0iI0IwQjhDMSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4="}
-                      alt="" style={{ width: 20, height: 20, display: "block", transform: openGroups[item.id] ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform 0.15s" }} />
+                    <span style={{ fontSize: 14, color: "#9EA6B2", transition: "transform 0.15s", display: "inline-block", transform: openGroups[item.id] ? "rotate(90deg)" : "rotate(-90deg)" }}>›</span>
                   </div>
-                  {/* 하위 — Figma 2:627~634: h:59 bg:#EFF2F6 pl:20 */}
+                  {/* 하위 메뉴 — Figma: bg:#EFF2F6 */}
                   {openGroups[item.id] && item.children.map(child => (
-                    <div key={child.id} onClick={() => { setSelectedTemplateId(child.id); setSelectedBannerId(null); setView("list"); }}
-                      style={{ height: 59, display: "flex", alignItems: "center", paddingLeft: 20, cursor: "pointer", background: "#EFF2F6",
-                        fontSize: 16, fontWeight: 600, fontFamily: tokens.font.family,
-                        color: selectedTemplateId === child.id ? "#2272EB" : "#4E5968" }}>
-                      {child.label}
-                    </div>
+                    <div
+                      key={child.id}
+                      onClick={() => { setSelectedTemplateId(child.id); setSelectedBannerId(null); setView("list"); }}
+                      style={{
+                        padding: 20,
+                        cursor: "pointer",
+                        fontSize: 16,
+                        fontWeight: 600,
+                        fontFamily: tokens.font.family,
+                        background: "#EFF2F6",
+                        color: selectedTemplateId === child.id ? "#2272EB" : "#4E5968",
+                      }}
+                    >{child.label}</div>
                   ))}
                 </>
               ) : (
-                {/* 일반 — Figma 2:618: h:59 p:20 */}
-                <div onClick={() => { setSelectedTemplateId(item.id); setSelectedBannerId(null); setView("list"); }}
-                  style={{ height: 59, display: "flex", alignItems: "center", padding: "0 20px", cursor: "pointer",
-                    fontSize: 16, fontWeight: 600, fontFamily: tokens.font.family,
-                    color: selectedTemplateId === item.id ? "#2272EB" : "#4E5968" }}>
-                  {item.label}
+                <div
+                  onClick={() => { setSelectedTemplateId(item.id); setSelectedBannerId(null); setView("list"); }}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: 20, cursor: "pointer", fontSize: 16, fontWeight: 600, fontFamily: tokens.font.family,
+                    color: selectedTemplateId === item.id ? "#2272EB" : "#4E5968",
+                  }}
+                >
+                  <span>{item.label}</span>
                 </div>
               )}
             </div>
@@ -1953,7 +1968,7 @@ export default function App() {
       {/* ── Main Content ── */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
-        {/* Header — Figma 2:614: h:80 border-b:#DFE2E5 / "배너 관리 시스템" 18px SemiBold #333D4B */}
+        {/* Header — Figma: h:80 / border-b:#DFE2E5 */}
         <div style={{ background: "white", padding: "0 20px", height: 80, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #DFE2E5", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             {view === "editor" && (
@@ -1979,78 +1994,85 @@ export default function App() {
                 </button>
               </>
             )}
+            {view === "list" && (
+              <button onClick={createNew}
+                style={{ padding: "6px 16px", borderRadius: 8, border: "none", background: "#3182F6", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: tokens.font.family }}>
+                + 새 배너
+              </button>
+            )}
           </div>
         </div>
 
         {/* Body */}
         {view === "list" ? (
-          {/* ── Figma 2:647: bg:#F0F2F5 / 2:652 title x:50 y:50 30px ExtraBold #4E5968
-               2:673 left w:620 / 2:670 right w:620 ── */}
+          /* ── Figma 2:613 구조: bg:#F0F2F5 / 제목 + 좌(미리보기) + 우(배너목록) ── */
           <div style={{ flex: 1, overflow: "hidden", background: "#F0F2F5", position: "relative" }}>
 
-            {/* 페이지 제목 — Figma 2:652: x:50 y:50 / 30px ExtraBold #4E5968 */}
-            <div style={{ position: "absolute", left: 50, top: 50, fontSize: 30, fontWeight: 800, color: "#4E5968", fontFamily: tokens.font.family, whiteSpace: "nowrap", zIndex: 1 }}>
+            {/* 페이지 제목 */}
+            <div style={{ position: "absolute", left: 50, top: 50, fontSize: 30, fontWeight: 800, color: "#4E5968", fontFamily: tokens.font.family, whiteSpace: "nowrap" }}>
               {TEMPLATES[selectedTemplateId]?.label}
             </div>
 
-            {/* body row — Figma 2:676: top:86 */}
+            {/* 본문 — 좌우 분할 */}
             <div style={{ position: "absolute", left: 0, top: 86, right: 0, bottom: 0, display: "flex" }}>
 
-              {/* 좌: 미리보기 — Figma 2:673: w:620 */}
+              {/* 좌: 미리보기 (w:620) */}
               <div style={{ width: "50%", height: "100%", overflow: "hidden", position: "relative" }}>
-                {/* "미리보기" — Figma 2:674: x:50 y:50 / 20px Bold #4E5968 */}
+                {/* "미리보기" 레이블 */}
                 <div style={{ position: "absolute", left: 50, top: 50, fontSize: 20, fontWeight: 700, color: "#4E5968", fontFamily: tokens.font.family }}>미리보기</div>
 
-                {/* "템플릿 생성하기" 버튼 — Figma 2:910: x:477 y:45.5 */}
-                <button onClick={createNew}
-                  style={{ position: "absolute", left: 477, top: 45, padding: "8px 16px", borderRadius: 8, border: "none", background: "#2272EB", color: "white", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: tokens.font.family }}>
-                  템플릿 생성하기
-                </button>
-
-                {/* 흰 카드 — Figma 2:684: x:50 y:104 w:540 h:300 rounded:8 */}
-                <div style={{ position: "absolute", left: 50, top: 104, width: 540, height: 300, background: "white", borderRadius: 8, overflow: "hidden" }}>
-                  {/* 크기 정보 — Figma 2:1389: x:20 y:20 / 16px Bold #4E5968 */}
-                  <div style={{ position: "absolute", left: 20, top: 20, fontSize: 16, fontWeight: 700, color: "#4E5968", fontFamily: tokens.font.family }}>
-                    {TEMPLATES[selectedTemplateId]?.canvasW} × {TEMPLATES[selectedTemplateId]?.canvasH} px
+                {/* 흰 카드 — 배너 미리보기 */}
+                <div style={{ position: "absolute", left: 50, top: 104, width: 540, background: "white", borderRadius: 8, overflow: "hidden", minHeight: 200 }}>
+                  {/* 크기 표시 */}
+                  <div style={{ padding: "20px 20px 12px", display: "flex", alignItems: "center" }}>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: "#4E5968", fontFamily: tokens.font.family }}>
+                      {TEMPLATES[selectedTemplateId]?.canvasW} × {TEMPLATES[selectedTemplateId]?.canvasH} px
+                    </span>
                   </div>
-                  {/* 배너 미리보기 — Figma 2:1251: x:79 y:98 */}
-                  <div style={{ position: "absolute", left: 79, top: 98 }}>
+                  {/* 배너 미리보기 — 중앙 배치 */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 20px 32px" }}>
                     <BannerPreview template={selectedTemplateId} slotValues={{}} scale={0.7} />
                   </div>
                 </div>
+
+                {/* 템플릿 생성하기 버튼 */}
+                <div style={{ position: "absolute", left: 50, top: 104 + 200 + 20, display: "flex" }}>
+                  <button onClick={createNew}
+                    style={{ padding: "10px 20px", borderRadius: 8, border: "none", background: "#2272EB", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: tokens.font.family }}>
+                    템플릿 생성하기
+                  </button>
+                </div>
               </div>
 
-              {/* 우: 배너 목록 — Figma 2:670: w:620 */}
+              {/* 우: 배너 목록 (w:620) */}
               <div style={{ width: "50%", height: "100%", overflowY: "auto", position: "relative" }}>
-                {/* "배너 목록 N" — Figma 2:671 x:30 y:50 / 2:677 파란숫자 x:116 */}
-                <div style={{ position: "sticky", top: 0, background: "#F0F2F5", paddingTop: 50, paddingBottom: 16, paddingLeft: 30, zIndex: 1, display: "flex", alignItems: "baseline", gap: 4 }}>
+                {/* "배너 목록 N" 레이블 */}
+                <div style={{ position: "sticky", top: 0, background: "#F0F2F5", paddingTop: 50, paddingBottom: 12, paddingLeft: 30, paddingRight: 30, display: "flex", alignItems: "baseline", gap: 6, zIndex: 1 }}>
                   <span style={{ fontSize: 20, fontWeight: 700, color: "#4E5968", fontFamily: tokens.font.family }}>배너 목록</span>
                   <span style={{ fontSize: 20, fontWeight: 900, color: "#2272EB", fontFamily: tokens.font.family }}>{filteredBanners.length}</span>
                 </div>
 
-                {/* 배너 리스트 — Figma 2:1388: x:30 y:104 w:540 gap:12 */}
+                {/* 배너 카드 목록 */}
                 <div style={{ paddingLeft: 30, paddingRight: 30, paddingBottom: 30, display: "flex", flexDirection: "column", gap: 12 }}>
                   {filteredBanners.length === 0 ? (
                     <div style={{ textAlign: "center", padding: "60px 0", color: "#9EA6B2", fontSize: 14, fontFamily: tokens.font.family }}>
                       배너가 없습니다.<br/>템플릿 생성하기를 눌러 새 배너를 만들어 보세요.
                     </div>
                   ) : filteredBanners.map(b => (
-                    {/* 배너 카드 — Figma 2:1295: w:540 h:86 bg:white rounded:8 */}
+                    /* Figma 배너 카드: h:86 bg:white rounded:8 / 미니프리뷰 + 배너명 + chevron */
                     <div key={b.id}
                       onClick={() => { setSelectedBannerId(b.id); setView("editor"); }}
                       style={{ background: "white", height: 86, borderRadius: 8, overflow: "hidden", position: "relative", cursor: "pointer", flexShrink: 0 }}>
-                      {/* 미니 배너 — Figma 2:1296: x:20 세로중앙 / scale 0.4 */}
+                      {/* 미니 배너 프리뷰 — 세로 중앙, 좌측 20px */}
                       <div style={{ position: "absolute", left: 20, top: "50%", transform: "translateY(-50%)" }}>
                         <BannerPreview template={b.templateId} slotValues={b.slotValues} scale={0.4} bgColor={b.bgColor} />
                       </div>
-                      {/* 배너명 — Figma 2:1340: x:196 세로중앙 / 16px Bold #4E5968 */}
-                      <div style={{ position: "absolute", left: 196, top: "50%", transform: "translateY(-50%)", fontSize: 16, fontWeight: 700, color: "#4E5968", fontFamily: tokens.font.family, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 270 }}>
+                      {/* 배너명 */}
+                      <div style={{ position: "absolute", left: 196, top: "50%", transform: "translateY(-50%)", fontSize: 16, fontWeight: 700, color: "#4E5968", fontFamily: tokens.font.family, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }}>
                         {b.name}
                       </div>
-                      {/* chevron — Figma 2:1393: right:20 세로중앙 / 20x20 */}
-                      <div style={{ position: "absolute", right: 20, top: "50%", transform: "translateY(-50%)" }}>
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNNy41IDVMMTIuNSAxMEw3LjUgMTUiIHN0cm9rZT0iI0IwQjhDMSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=" alt="" style={{ width: 20, height: 20, display: "block" }} />
-                      </div>
+                      {/* chevron 우측 */}
+                      <div style={{ position: "absolute", right: 20, top: "50%", transform: "translateY(-50%)", fontSize: 18, color: "#9EA6B2" }}>›</div>
                     </div>
                   ))}
                 </div>
